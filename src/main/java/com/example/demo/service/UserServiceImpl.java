@@ -46,7 +46,8 @@ public class UserServiceImpl {
         List<Friendship> friendshipsAll = friendsRepository.findAll();
 
         for (Friendship friendship : friendshipsAll) {
-            if (friendship.getOwner().getId() == idUser) {
+            log.info("VEAQUI: "+ friendship.getOwner().getId()+" "+friendship.getFriend().getId()+" "+idUser);
+            if (friendship.getOwner().getId() == idUser || friendship.getFriend().getId() == idUser) {
                 res.add(friendship);
             }
         }
@@ -86,9 +87,11 @@ public class UserServiceImpl {
 
 
     public Set<User> getFriendsOf(Long ownerId) {
+        log.info("CANAL111 ");
         Set<User> rtn = new HashSet<>();
         User user = userRepository.findById(ownerId);
         List<Friendship> friendship = friendsRepository.findAll();
+        log.info("CANAL "+ user);
         if (user != null) {
             for (Friendship fsh : friendship) {
                 if (fsh.getOwner().getEmail() == user.getEmail()) {

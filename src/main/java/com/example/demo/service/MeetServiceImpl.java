@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 @Transactional
@@ -22,6 +24,9 @@ public class MeetServiceImpl {
 
     @Autowired
     private ParticipantRepository participantRepository;
+
+    @Autowired
+    private UserServiceImpl userService;
 
     private FactoryConcreteParticipant factoryParticipant = new FactoryConcreteParticipant();
 
@@ -38,10 +43,14 @@ public class MeetServiceImpl {
         User user = userRepository.findById(idUser);
         User owner = userRepository.findById(idOwner);
 
+        log.info("SAVE ");
         Participant participant = factoryParticipant.createParticipant(bet, user, currentMeet, Rol.PARTICIPANT);
-        participantRepository.save(participant);
+        participant=participantRepository.save(participant);
+        log.info("SAVEWE "+participant);
+
         Participant participantOwner = factoryParticipant.createParticipant(bet, owner, currentMeet, Rol.OWNER);
-        participantRepository.save(participantOwner);
+        participantOwner=participantRepository.save(participantOwner);
+        log.info("SAVESE "+participantOwner);
         return currentMeet;
     }
 
@@ -94,9 +103,39 @@ public class MeetServiceImpl {
         return participants;
     }
 
-    public List<Meet> getMeets() {
-        return meetRepository.findAll();
+    public List<Meet> getMeets(Long idUser) {
+        log.info("CANAL000");
+        List<Friendship> friends = userService.getFriends(idUser);
+        log.info("FRIENDS"+ friends);
+        List<Participant> owners = getOwners();
+        List<Meet> meets=new ArrayList<>();
+        for (Friendship friendship : friends) {
+            log.info("VIISTO"+ " *** "+friendship.getOwner().getId());
+            for (Participant owner : owners) {
+                log.info("VEESTO"+ owner.getUser().getId() +" *** "+friendship.getOwner().getId());
+                if (owner.getUser().getId() == friendship.getOwner().getId()) {
+                    meets.add(owner.getMeet());
+                }
+            }
+        }
+        log.info("TRABAJOB"+ meets);
+        return meets;
     }
+
+
+    public List<Participant> getOwners() {
+        List<Participant> participants = participantRepository.findAll();
+        List<Participant> owners = new ArrayList<>();
+        for (Participant participant : participants) {
+            log.info("ERES " +participant.getUser());
+            if (participant.getRol() == Rol.OWNER) {
+                owners.add(participant);
+            }
+        }
+
+        return owners;
+    }
+
 
     public Participant addBetToUser(Long idParticipant, Long idMeet, Integer amount) {
         Meet meet = meetRepository.findById(idMeet);

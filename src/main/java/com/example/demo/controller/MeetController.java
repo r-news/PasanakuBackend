@@ -53,9 +53,14 @@ public class MeetController {
         return new ResponseEntity<List<Participant>>(meetService.addUserToMeet(idUser, idMeet, idOwner), HttpStatus.OK);
     }
 
-    @GetMapping("/getMeets")
-    public ResponseEntity<List<Meet>> getMeets() {
-        return new ResponseEntity<>(meetService.getMeets(), HttpStatus.OK);
+    @RequestMapping(
+            value = "/getMeets/{idUser}",
+            method = RequestMethod.GET,
+            consumes = "application/json",
+            produces = "application/json")
+    public ResponseEntity<List<Meet>> getMeets(@PathVariable Long idUser) {
+        log.info("DDKDKDDK"+ idUser);
+        return new ResponseEntity<>(meetService.getMeets(idUser), HttpStatus.OK);
     }
 
 
